@@ -25,18 +25,16 @@ aux_fitness=[]
 paquetes_a_enviar=[]
 send_package=[]
 requerido=[]
-mosMejoresGen=[]
+losMejoresGen=[]
 envio=[]
+Send_to=[]
 
 def seleccion(initial_population):
     global aux_fitness
-    paquete_generacion=[]
     aux_fitness=[]
     retorno_gen=[]
     suma_fitness = 0
     prom_fitness= 0
-    best_retorno=[]
-    best2_retorno=[]
     evaluar_esto=[]
     z=0
 
@@ -55,35 +53,31 @@ def seleccion(initial_population):
     print("suma fitness " ,suma_fitness)
     print("promedio fitness " , prom_fitness)
     print("maximo fitness " , max(aux_fitness))
-    for y in aux_fitness:
-        prob_individual = y/suma_fitness
-        prob_wheel_roulette.append(prob_individual)
+    the_best=[]
+    for chin in evaluar_esto:
+        if len(the_best)==0 or len(the_best) == 1:
+            the_best.append(chin)
+        else:
+            for sc in range(len(the_best)):
+                if(the_best[sc][1]<chin[1]):
+                    the_best[sc] = chin
+                    break
+    retorno_gen.append(the_best[0][0])
+    retorno_gen.append(the_best[1][0])
+    
+    
 
-    paquete_generacion.append([aux_fitness, suma_fitness])
+    if(the_best[0][1]>the_best[1][1]):
+        send_package.append(the_best[0][1])
+        envio.append(the_best[0][0])
+    else:
+        send_package.append(the_best[1][1])
+        envio.append(the_best[1][0])
 
-    maximo_gen=max(aux_fitness)
     minimo_gen=min(aux_fitness)
-    mejorfit_gen.append(maximo_gen)
     peorfit_gen.append(minimo_gen)
     promfit_gen.append(prom_fitness)
-    aux_fitness.sort()
-    tamanio_auxfit = len(aux_fitness)
-    print(aux_fitness)
-    best_retorno=max(aux_fitness)
-    best2_retorno=aux_fitness[tamanio_auxfit-2]
-
-    for pero in evaluar_esto:
-        if pero[1] == best_retorno:
-            best_retorno=pero[0]
-            retorno_gen.append(best_retorno)
-        if pero[1] == best2_retorno:
-            best2_retorno=pero[0]
-            retorno_gen.append(best2_retorno)
-    print(best_retorno, best2_retorno)
-
-    send_package.append(max(aux_fitness))
-    envio.append(best_retorno)
-    paquetes_a_enviar.extend([best_retorno, best2_retorno])
+    send_package.sort()
     
     return retorno_gen
 
@@ -116,7 +110,6 @@ def crossover(datos):
     return data_returned
 
 def mutation(datos):
-    aMutar=datos
     indice=0
     for a in datos:
         ans = bool(random.getrandbits(1))
@@ -128,7 +121,7 @@ def mutation(datos):
                     newPackage = obtener_Paquete(indexPackage)
                     datos[indice][y] = newPackage   
                 else:
-                    print("")
+                    pass
         indice+=1
     return datos
 
@@ -180,7 +173,7 @@ def validate_weight(hijitos, datos):
                 sumValor1=auxvalor1
                 hijos_returned.append(hijo1)
             else: 
-                print("")
+                pass
     else:
         hijos_returned.append(valor1)
 
@@ -198,6 +191,7 @@ def validate_weight(hijitos, datos):
             mitadDos1 = valor2[:puntoCorte2]
             mitadDos2 = valor2[puntoCorte2:]
 
+
             hijo1=[]
             hijo2=[]
 
@@ -214,7 +208,7 @@ def validate_weight(hijitos, datos):
                 sumValor2=auxvalor2
                 hijos_returned.append(hijo2)
             else:
-                print("")     
+                pass     
     else:
         hijos_returned.append(valor2)
     return hijos_returned
@@ -223,13 +217,16 @@ def generate_population(paquetesIniciales):
     while len(initial_population) < paquetesIniciales:
         seleccionado=[]
         suma=0
-        while suma < tamanioContenedor:
+        packInContainer=random.randint(4,20)
+        control=0
+        while control < packInContainer:
             randomPackage= random.randint(0,4)
             n = packages[randomPackage]
             suma += n[1]
             seleccionado.append(n)
+            control+=1
         if suma > tamanioContenedor:
-            print("")
+            pass
         else:
             initial_population.extend([seleccionado])
         
@@ -241,18 +238,18 @@ def generate_packages():
             aux.extend([indice])
         else:
             if indice in aux:
-                print("")
+                pass
             else:
                 aux.extend([indice])
     aux.sort()
     for i in range(len(aux)):
         packages.extend([[aux[i], i+1]])
 
-def mostrar_Poblacion(poblation):
+def mostrar_Poblacion():
     f=0
     costos=0
-    for i in poblation:
-        costos = poblation[f] 
+    for i in initial_population:
+        costos = initial_population[f] 
         sumaCostos=0
         sumaPeso=0
         for x in costos:
@@ -273,6 +270,20 @@ def mostrar_Paquetes_a_enviar():
             sumaPeso += x[1]
         f+=1
         print("individuo a enviar ",f,".-", i, "pesa = ", sumaPeso," ---- suma de costos= ", sumaCostos)
+
+def ordenar_Packa_enviar():
+    global envio, losMejoresGen
+    x=0
+    evaluar=[]
+    for a in envio:
+        aux = envio[x]
+        sumaValor=0
+        for b in aux:
+            sumaValor+= b[0]
+        x+=1
+        evaluar.append([a, sumaValor])
+    losMejoresGen = sorted(evaluar, key = lambda x : x[1])
+
 
 
 def generateGraphic(x,y,z):
@@ -316,30 +327,37 @@ def genereteGraphicPackages():
     ye = 120
     indice=0
     texto=""
-    costo=0
-    for i in envio:
-        for j in range(len(i)):
-            costo+=envio[indice][j][1]
-            texto += "["+str(envio[indice][j])+"], "  
-        Label(miFrame, text="Paquete "+ str(indice+1)+" = " +texto + " Costo: " + str(costo), font=("Comic Sans MS", 10)).place(x= equis, y=ye)
+    valor=0
+    peso=0
+    print("graficando packs")
+    for i in Send_to:
+        aux = i
+        auxv2 = aux[0]
+        #print(auxv2)
+        for j in auxv2:
+            #print(j)
+            valor+=j[0]
+            peso+=j[1]
+            texto += "["+str(j)+"], "  
+        Label(miFrame, text="Paquete "+ str(indice+1)+" = " +texto + " Pesa: "+ str(peso) +" Valor: " + str(valor), font=("Comic Sans MS", 8)).place(x= equis, y=ye)
         ye+=25
         indice+=1
         texto=""
-        costo=0
+        valor=0
+        peso=0
     root.mainloop()
 
 if __name__ == "__main__":
     tamanioContenedor = int (input("Tamano del contenedor: "))
-    numPaquetes = int (input("Numero de paquetes a enviar(necesita ser par):"))
+    numPaquetes = int (input("Numero de paquetes a enviar:"))
     paquetesIniciales = int (input("Numero de paquetes iniciales: "))
     generate_packages()
     print("PAQUETES GENERADOS: ",packages)
     generate_population(paquetesIniciales)
-    #mostrar_Poblacion()
+    mostrar_Poblacion()
     poblation = initial_population
     i=0
-    while paquetesElegidos < numPaquetes:
-        mostrar_Poblacion(poblation)
+    for i in range(50):
         i+=1
         print("Generacion no. ",i)
         poblation = seleccion(poblation)
@@ -347,8 +365,11 @@ if __name__ == "__main__":
         mutation_data=mutation(crossover_data)
         poblation.extend(mutation_data)
         paquetesElegidos+=1
-    #mostrar_Paquetes_a_enviar()
+    s=0
+    to_Send=50-numPaquetes
+    ordenar_Packa_enviar()
+    Send_to=losMejoresGen[to_Send:]
+    for sf in Send_to:
+        print(sf)
     generateGraphic(send_package, peorfit_gen, promfit_gen)
     genereteGraphicPackages()
-
-        

@@ -1,30 +1,26 @@
+from random import randint
 from tkinter import *
+import random
+import math 
+import matplotlib.pyplot as plt
+import numpy as np
 
-root=Tk()
 
-frame = Frame(root, bd=2, relief=SUNKEN)
-frame.pack(fill=BOTH)
+aleatorios=[]
 
-xscrollbar = Scrollbar(frame, orient=HORIZONTAL)
-xscrollbar.grid(row=1, column=0, sticky=E+W)
+for i in range(10):
+    numero = random.randint(11,20)
+    numero2 = random.randint(1,10)
+    aleatorios.append([numero, numero2])
 
-yscrollbar = Scrollbar(frame)
-yscrollbar.grid(row=0, column=1, sticky=N+S)
+b = sorted(aleatorios, key = lambda x : x[0])
+c = sorted(aleatorios, key = lambda x : x[1])
 
-canvas = Canvas(frame, bd=0, scrollregion=(0, 0, 1000, 1000),
-                xscrollcommand=xscrollbar.set,
-                yscrollcommand=yscrollbar.set)
+print(aleatorios)
+print(b)
+print(c)
 
-xscrollbar.config(command=canvas.xview)
-yscrollbar.config(command=canvas.yview)
-
-canvas.grid(row=0, column=0, sticky=N+S+E+W)
-
-f=Frame(canvas)
-f.pack()
-
-## AQUI PUEDES PONER TUS FRAMES Y TUS ENTRY
-
-canvas.create_window(0,0,ancho=NW,window=f)
-
-root.mainloop()
+# a = [('Al', 2),('Bill', 1),('Carol', 2), ('Abel', 3), ('Zeke', 2), ('Chris', 1)]  
+# b = sorted(sorted(a, key = lambda x : x[0]), key = lambda x : x[1], reverse = True)  
+# print(b)  
+# [('Abel', 3), ('Al', 2), ('Carol', 2), ('Zeke', 2), ('Bill', 1), ('Chris', 1)]
